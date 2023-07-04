@@ -27,6 +27,7 @@ package org.spongepowered.asm.mixin.injection.invoke;
 import java.util.Arrays;
 import java.util.List;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -110,6 +111,10 @@ public class ModifyArgInjector extends InvokeInjector {
     protected void injectAtInvoke(Target target, InjectionNode node) {
         MethodInsnNode methodNode = (MethodInsnNode)node.getCurrentTarget();
         Type[] args = Type.getArgumentTypes(methodNode.desc);
+        if (node.hasDecoration(RedirectInjector.Meta.KEY) && node.isReplaced() && node.getOriginalTarget().getOpcode() != Opcodes.INVOKESTATIC) {
+            // A redirect handler method for a virtual target will have an extra arg at the start that we don't care about.
+            args = Arrays.copyOfRange(args, 1, args.length);
+        }
         int argIndex = this.findArgIndex(target, args);
         InsnList insns = new InsnList();
         Extension extraLocals = target.extendLocals();
