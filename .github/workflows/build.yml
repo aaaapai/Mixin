@@ -5,12 +5,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [17-jdk, 21-jdk]
+        java: [21-jdk]
     runs-on: ubuntu-24.04
     container:
       image: eclipse-temurin:${{ matrix.java }}
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - uses: gradle/wrapper-validation-action@v2
+      - uses: gradle/wrapper-validation-action@v3
       - run: ./gradlew build publishToMavenLocal --stacktrace --warning-mode fail
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts
+          path: build/libs/
